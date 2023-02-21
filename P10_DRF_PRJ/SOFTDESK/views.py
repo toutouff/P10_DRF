@@ -9,7 +9,7 @@ from rest_framework.viewsets import ModelViewSet
 
 from .models import Project, User, Contributors, Issue, Comments
 from .serializers import ProjectSerializer, ProjectDetailSerializer, \
-    ContributorsSerializer, IssueSerializer, CommentsSerializer
+    ContributorsSerializer, IssueSerializer, CommentsSerializer, UserCreationSerializer
 
 
 class IsAuthor(BasePermission):
@@ -32,8 +32,16 @@ def register(request):
     user = User.objects.create_user(username=username, password=password)
     if user is not None:
         return Response({'status': 'registered'})
-
     return Response({'status': 'registration failed'})
+
+
+@api_view(['POST'])
+def register_2(request):
+    serializer = UserCreationSerializer(data=request.data)
+    if serializer.is_valid():
+        user = serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors)
 
 
 @api_view(['POST'])
@@ -67,6 +75,10 @@ class ContributorHelper:
 class ProjectViewSet(ModelViewSet):
     serializer_class = ProjectSerializer
     permission_classes = [IsAuthenticated()]
+
+    def update(self, request, *args, **kwargs):
+        kwargs['partial'] = True
+        return super().update(request, *args, **kwargs)
 
     def get_permissions(self):
         if self.action == 'list':
@@ -106,7 +118,7 @@ class ProjectViewSet(ModelViewSet):
             if User.objects.filter(id=user_id).exists():
                 contributor = Contributors.objects.create(project=project,
                                                           user_id=user_id)
-                return Response(ContributorsSerializer(contributor).data)
+                return Response(ContributorsSerializer(contributor).data, status=201)
             return Response('error : user does not exist')
         return Response(status=405)
 

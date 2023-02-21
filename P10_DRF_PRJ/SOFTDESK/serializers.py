@@ -42,7 +42,20 @@ class CommentsSerializer(ModelSerializer):
         fields = ['id', 'description']
 
 
+class UserCreationSerializer(ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['username', 'password']
+
+
+class UserDetailSerializer(ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'first_name', 'last_name', 'email', 'projects',
+                  'issues', 'comments']
+
+
 class UserSerializer(ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'first_name', 'last_name', 'email']
+        fields = ['id', 'username']
