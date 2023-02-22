@@ -36,6 +36,12 @@ class IssueSerializer(ModelSerializer):
         fields = '__all__'
 
 
+class IssueCreationSerializer(ModelSerializer):
+    class Meta:
+        model = Issue
+        fields = ['title', 'description', 'status', 'assigned_to']
+
+
 class CommentsSerializer(ModelSerializer):
     class Meta:
         model = Comments

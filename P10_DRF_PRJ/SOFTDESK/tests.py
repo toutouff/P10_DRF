@@ -1,19 +1,31 @@
 from django.urls import reverse_lazy
 from rest_framework.test import APITestCase
 
-from SOFTDESK.models import User, Project, Contributors
+from SOFTDESK.models import User, Project, Contributors, Issue
 
 
 class SoftDeskTestCase(APITestCase):
     def setUp(self):
+        self.userinfo = {'username': 'user1', 'password': 'user1'}
         self.user1 = User.objects.create_user(username='user1', password='user1')
         self.user2 = User.objects.create_user(username='user2', password='user2')
         self.project2 = Project.objects.create(title='project2', description='project2', author=self.user1)
+        self.contributor = Contributors.objects.create(permission='Read and Edit', role='test_role',
+                                                       user_id=self.user2.id, project_id=self.project2.id)
+        self.issue = Issue.objects.create(title='issue1', description='issue1', author=self.user1,
+                                          project=self.project2, status='open', assigned_to=self.contributor)
 
     @staticmethod
     def get_token(response):
         token = response.data['access']
         return f'Bearer {token}'
+
+    @staticmethod
+    def log_user(client, user_info):
+        response = client.post('/login/', {'username': user_info['username'], 'password': user_info['password']})
+        token = SoftDeskTestCase.get_token(response)
+        client.credentials(HTTP_AUTHORIZATION=token)
+        return client
 
 
 class TestUser(SoftDeskTestCase):
@@ -92,14 +104,45 @@ class TestProject(SoftDeskTestCase):
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, 201, response.status_code)
         self.assertEqual(self.project2.contributors.count(), contributors_count + 1)
-        # print(response.data)
 
     # test if author can get contributor's list from project
     def test_author_can_get_user_as_contributor(self):
         url = reverse_lazy('projects-contributors', kwargs={'pk': self.project2.id})
-        self.contributor = Contributors.objects.create(permission='Read and Edit', role='test_role',
-                                                       user_id=self.user2.id, project_id=self.project2.id)
         self.client.credentials(
             HTTP_AUTHORIZATION=self.get_token(self.client.post('/login/', {'username': 'user1', 'password': 'user1'})))
         response = self.client.get(url)
+
+    def test_author_can_delete_project(self):
+        url = reverse_lazy('projects-contributors-delete', kwargs={'pk': self.project2.id, 'contributor_pk':
+            self.contributor.id})
+        self.client.credentials(HTTP_AUTHORIZATION=self.get_token(self.client.post('/login/', {'username': 'user1',
+                                                                                               'password': 'user1'})))
+        count = Contributors.objects.all().count()
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, 204)
+        self.assertEqual(count - 1, self.project2.contributors.count())
+
+    def test_user_can_get_issues(self):
+        url = reverse_lazy('projects-issue_add-list', kwargs={'pk': self.project2.id})
+        self.client.credentials(HTTP_AUTHORIZATION=self.get_token(self.client.post('/login/', {'username': 'user1',
+                                                                                               'password': 'user1'})))
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('title', response.data[0])
+
+    def test_user_can_create_issue(self):
+        url = reverse_lazy('projects-issue_add-list', kwargs={'pk': self.project2.id})
+        count = self.project2.issues.count()
+        self.client.credentials(HTTP_AUTHORIZATION=self.get_token(self.client.post('/login/', {'username': 'user1',
+                                                                                               'password': 'user1'})))
+        data = {'title': 'test', 'description': 'test', 'status': 'open', 'assigned_to': self.contributor.id}
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, 201, response.data)
+        self.assertEqual(self.project2.issues.count(), count + 1)
+
+    def test_user_can_edit_issue(self):
+        url = reverse_lazy('projects-issue_update-delete', kwargs={'pk': self.project2.id, 'issue_pk': self.issue.id})
+        client = self.log_user(self.client, self.userinfo)
+        response = self.client.get(url)
         print(response.data)
+

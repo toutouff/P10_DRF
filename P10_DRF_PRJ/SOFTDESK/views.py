@@ -9,7 +9,7 @@ from rest_framework.viewsets import ModelViewSet
 
 from .models import Project, User, Contributors, Issue, Comments
 from .serializers import ProjectSerializer, ProjectDetailSerializer, \
-    ContributorsSerializer, IssueSerializer, CommentsSerializer, UserCreationSerializer
+    ContributorsSerializer, IssueSerializer, CommentsSerializer, UserCreationSerializer, IssueCreationSerializer
 
 
 class IsAuthor(BasePermission):
@@ -132,24 +132,26 @@ class ProjectViewSet(ModelViewSet):
             contributor = Contributors.objects.get(id=contributor_pk)
             msg = f'contributor {contributor.user.username} ( id : {contributor.id} ) has been deleted'
             contributor.delete()
-            return Response(msg)
+            return Response(msg, status=204)
         return Response(f'error : contributor (id : {contributor_pk}) does not exist')
 
-    @action(methods=['post', 'get'], detail=True, url_path='issue', url_name='issue_add-&-list',
+    @action(methods=['post', 'get'], detail=True, url_path='issue', url_name='issue_add-list',
             permission_classes=[(IsAuthor() or IsContributor()) and IsAuthenticated()])
     def issue_general(self, request, pk=None):
         def issue_create():
             project = self.get_object()
-            serializer = IssueSerializer(data=request.data)
+            data = request.data
+            serializer = IssueCreationSerializer(data=data)
             if serializer.is_valid():
-                issue = serializer.save()
-                return Response(serializer.data)
+                issue = serializer.save(project=project, author=request.user)
+                return Response(serializer.data, status=201)
             return Response(serializer.errors)
 
         def issue_list():
             project = self.get_object()
             issue_list = Issue.objects.filter(project=project)
-            return Response(IssueSerializer(instance=issue_list, many=True).data)
+            issue_serializer = IssueSerializer(instance=issue_list, many=True)
+            return Response(issue_serializer.data)
 
         if request.method == 'GET':
             return issue_list()
@@ -157,7 +159,7 @@ class ProjectViewSet(ModelViewSet):
             return issue_create()
 
     @action(methods=['patch', 'get', 'delete'], detail=True, url_path='issue/(?P<issue_pk>[^/.]+)',
-            url_name='issue_update-&-delete',
+            url_name='issue_update-delete',
             permission_classes=[(IsAuthor() or IsContributor()) and IsAuthenticated()])
     def issue_precise(self, request, pk=None, issue_pk=None):
         def issue_detail():
