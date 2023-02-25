@@ -158,7 +158,7 @@ class ProjectViewSet(ModelViewSet):
         elif request.method == 'POST':
             return issue_create()
 
-    @action(methods=['patch', 'get', 'delete'], detail=True, url_path='issue/(?P<issue_pk>[^/.]+)',
+    @action(methods=['patch', 'get', 'delete', 'put'], detail=True, url_path='issue/(?P<issue_pk>[^/.]+)',
             url_name='issue_update-delete',
             permission_classes=[(IsAuthor() or IsContributor()) and IsAuthenticated()])
     def issue_precise(self, request, pk=None, issue_pk=None):
@@ -188,7 +188,7 @@ class ProjectViewSet(ModelViewSet):
                 return Response(msg)
             return Response('error issue not found')
 
-        if request.method == 'PATCH':
+        if request.method == 'PATCH' or request.method == 'PUT':
             return issue_update()
         elif request.method == 'GET':
             return issue_detail()

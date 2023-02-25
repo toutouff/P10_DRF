@@ -140,9 +140,10 @@ class TestProject(SoftDeskTestCase):
         self.assertEqual(response.status_code, 201, response.data)
         self.assertEqual(self.project2.issues.count(), count + 1)
 
-    def test_user_can_edit_issue(self):
+    def test_user_can_update_issue(self):
         url = reverse_lazy('projects-issue_update-delete', kwargs={'pk': self.project2.id, 'issue_pk': self.issue.id})
         client = self.log_user(self.client, self.userinfo)
-        response = self.client.get(url)
-        print(response.data)
-
+        data = {'title': 'test', 'description': 'test_edit', 'status': 'open', 'assigned_to': self.contributor.id}
+        response = client.put(url, data)
+        self.assertEqual(response.status_code, 200, response.data)
+        self.assertIn('test_edit', response.data['description'])
