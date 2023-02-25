@@ -9,7 +9,7 @@ from rest_framework.viewsets import ModelViewSet
 
 from .models import Project, User, Contributors, Issue, Comments
 from .serializers import ProjectSerializer, ProjectDetailSerializer, \
-    ContributorsSerializer, IssueSerializer, CommentsSerializer
+    ContributorsSerializer, IssueSerializer, CommentsSerializer, UserCreationSerializer, IssueCreationSerializer
 
 
 class IsAuthor(BasePermission):
@@ -32,8 +32,16 @@ def register(request):
     user = User.objects.create_user(username=username, password=password)
     if user is not None:
         return Response({'status': 'registered'})
-
     return Response({'status': 'registration failed'})
+
+
+@api_view(['POST'])
+def register_2(request):
+    serializer = UserCreationSerializer(data=request.data)
+    if serializer.is_valid():
+        user = serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors)
 
 
 @api_view(['POST'])
@@ -67,6 +75,10 @@ class ContributorHelper:
 class ProjectViewSet(ModelViewSet):
     serializer_class = ProjectSerializer
     permission_classes = [IsAuthenticated()]
+
+    def update(self, request, *args, **kwargs):
+        kwargs['partial'] = True
+        return super().update(request, *args, **kwargs)
 
     def get_permissions(self):
         if self.action == 'list':
@@ -106,7 +118,7 @@ class ProjectViewSet(ModelViewSet):
             if User.objects.filter(id=user_id).exists():
                 contributor = Contributors.objects.create(project=project,
                                                           user_id=user_id)
-                return Response(ContributorsSerializer(contributor).data)
+                return Response(ContributorsSerializer(contributor).data, status=201)
             return Response('error : user does not exist')
         return Response(status=405)
 
@@ -120,32 +132,34 @@ class ProjectViewSet(ModelViewSet):
             contributor = Contributors.objects.get(id=contributor_pk)
             msg = f'contributor {contributor.user.username} ( id : {contributor.id} ) has been deleted'
             contributor.delete()
-            return Response(msg)
+            return Response(msg, status=204)
         return Response(f'error : contributor (id : {contributor_pk}) does not exist')
 
-    @action(methods=['post', 'get'], detail=True, url_path='issue', url_name='issue_add-&-list',
+    @action(methods=['post', 'get'], detail=True, url_path='issue', url_name='issue_add-list',
             permission_classes=[(IsAuthor() or IsContributor()) and IsAuthenticated()])
     def issue_general(self, request, pk=None):
         def issue_create():
             project = self.get_object()
-            serializer = IssueSerializer(data=request.data)
+            data = request.data
+            serializer = IssueCreationSerializer(data=data)
             if serializer.is_valid():
-                issue = serializer.save()
-                return Response(serializer.data)
+                issue = serializer.save(project=project, author=request.user)
+                return Response(serializer.data, status=201)
             return Response(serializer.errors)
 
         def issue_list():
             project = self.get_object()
             issue_list = Issue.objects.filter(project=project)
-            return Response(IssueSerializer(instance=issue_list, many=True).data)
+            issue_serializer = IssueSerializer(instance=issue_list, many=True)
+            return Response(issue_serializer.data)
 
         if request.method == 'GET':
             return issue_list()
         elif request.method == 'POST':
             return issue_create()
 
-    @action(methods=['patch', 'get', 'delete'], detail=True, url_path='issue/(?P<issue_pk>[^/.]+)',
-            url_name='issue_update-&-delete',
+    @action(methods=['patch', 'get', 'delete', 'put'], detail=True, url_path='issue/(?P<issue_pk>[^/.]+)',
+            url_name='issue_update-delete',
             permission_classes=[(IsAuthor() or IsContributor()) and IsAuthenticated()])
     def issue_precise(self, request, pk=None, issue_pk=None):
         def issue_detail():
@@ -171,10 +185,10 @@ class ProjectViewSet(ModelViewSet):
                 issue = queryset.first()
                 msg = f'issue({issue.id} has been deleted'
                 issue.delete()
-                return Response(msg)
+                return Response(msg, status=204)
             return Response('error issue not found')
 
-        if request.method == 'PATCH':
+        if request.method == 'PATCH' or request.method == 'PUT':
             return issue_update()
         elif request.method == 'GET':
             return issue_detail()
@@ -195,22 +209,22 @@ class ProjectViewSet(ModelViewSet):
                 return Response(serializer.data)
             return Response('issue not found')
 
-        def create_comment():
+        def comment_create():
             issue_set = Issue.objects.filter(id=issue_pk)
             if len(issue_set):
                 serializer = CommentsSerializer(data=request.data)
                 if serializer.is_valid():
                     comment = serializer.save(author=request.user, issue=issue_set.first())
-                    return Response(CommentsSerializer(instance=comment).data)
+                    return Response(CommentsSerializer(instance=comment).data, status=201)
                 return Response(serializer.errors)
 
         if request.method == 'GET':
             return list_comment()
         elif request.method == 'POST':
-            return create_comment()
+            return comment_create()
 
-    @action(methods=['get', 'patch', 'delete'], detail=True, url_path='issue/(?P<issue_pk>[^/.]+)/comments/('
-                                                                      '?P<comment_pk>[^/.]+)',
+    @action(methods=['get', 'patch', 'delete', 'put'], detail=True, url_path='issue/(?P<issue_pk>[^/.]+)/comments/('
+                                                                             '?P<comment_pk>[^/.]+)',
             url_name='comment_detail-&-update-&-delete',
             permission_classes=[(IsAuthor() or IsContributor()) and IsAuthenticated()])
     def comment_detail(self, request, pk=None, issue_pk=None, comment_pk=None):
@@ -236,7 +250,7 @@ class ProjectViewSet(ModelViewSet):
                 comment = Comments.objects.get(id=comment_pk)
                 msg = f'comment({comment.id}) has been deleted'
                 comment.delete()
-                return Response(msg)
+                return Response(msg, status=204)
             return Response('comment not found')
 
         def issue_tester():
@@ -249,7 +263,7 @@ class ProjectViewSet(ModelViewSet):
 
         if request.method == 'GET':
             return detail_comment()
-        elif request.method == 'PATCH':
+        elif request.method == 'PATCH' or request.method == 'PUT':
             return update_comment()
         elif request.method == 'DELETE':
             return delete_comment()
