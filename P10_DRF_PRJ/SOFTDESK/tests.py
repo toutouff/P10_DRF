@@ -1,7 +1,7 @@
 from django.urls import reverse_lazy
 from rest_framework.test import APITestCase
 
-from SOFTDESK.models import User, Project, Contributors, Issue
+from SOFTDESK.models import User, Project, Contributors, Issue, Comments
 
 
 class SoftDeskTestCase(APITestCase):
@@ -14,6 +14,7 @@ class SoftDeskTestCase(APITestCase):
                                                        user_id=self.user2.id, project_id=self.project2.id)
         self.issue = Issue.objects.create(title='issue1', description='issue1', author=self.user1,
                                           project=self.project2, status='open', assigned_to=self.contributor)
+        self.comment = Comments.objects.create(description='comment1', author=self.user1, issue=self.issue)
 
     @staticmethod
     def get_token(response):
@@ -147,3 +148,46 @@ class TestProject(SoftDeskTestCase):
         response = client.put(url, data)
         self.assertEqual(response.status_code, 200, response.data)
         self.assertIn('test_edit', response.data['description'])
+
+    def test_user_can_delete_issue(self):
+        url = reverse_lazy('projects-issue_update-delete', kwargs={'pk': self.project2.id, 'issue_pk': self.issue.id})
+        client = self.log_user(self.client, self.userinfo)
+        count = self.project2.issues.count()
+        response = client.delete(url)
+        self.assertEqual(response.status_code, 204, response.data)
+        self.assertEqual(self.project2.issues.count(), count - 1)
+
+    def test_user_can_create_comment(self):
+        url = reverse_lazy('projects-comment_create-&-get', kwargs={'pk': self.project2.id, 'issue_pk': self.issue.id})
+        count = self.issue.comments.count()
+        client = self.log_user(self.client, self.userinfo)
+        data = {'description': 'test'}
+        response = client.post(url, data)
+        self.assertEqual(response.status_code, 201, response.data)
+        self.assertEqual(self.issue.comments.count(), count + 1)
+
+    def test_user_can_get_comments(self):
+        url = reverse_lazy('projects-comment_create-&-get', kwargs={'pk': self.project2.id, 'issue_pk': self.issue.id})
+        client = self.log_user(self.client, self.userinfo)
+        response = client.get(url)
+        self.assertEqual(response.status_code, 200, response.data)
+        self.assertIn('comment1', response.data[0]['description'])
+
+    def test_user_can_update_coment(self):
+        url = reverse_lazy('projects-comment_detail-&-update-&-delete', kwargs={'pk': self.project2.id, 'issue_pk':
+            self.issue.id, 'comment_pk': self.comment.id})
+        client = self.log_user(self.client, self.userinfo)
+        data = {'description': 'test_edit'}
+        response = client.put(url, data)
+        self.assertEqual(response.status_code, 200, response.data)
+        self.assertIn('test_edit', response.data['description'])
+
+    def test_user_can_delete_comment(self):
+        url = reverse_lazy('projects-comment_detail-&-update-&-delete',
+                           kwargs={'pk': self.project2.id, 'issue_pk': self.issue.id,
+                                   'comment_pk': self.comment.id})
+        client = self.log_user(self.client, self.userinfo)
+        count = self.issue.comments.count()
+        response = client.delete(url)
+        self.assertEqual(response.status_code, 204, response.data)
+        self.assertEqual(self.issue.comments.count(), count - 1)

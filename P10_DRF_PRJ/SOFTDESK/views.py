@@ -185,7 +185,7 @@ class ProjectViewSet(ModelViewSet):
                 issue = queryset.first()
                 msg = f'issue({issue.id} has been deleted'
                 issue.delete()
-                return Response(msg)
+                return Response(msg, status=204)
             return Response('error issue not found')
 
         if request.method == 'PATCH' or request.method == 'PUT':
@@ -209,22 +209,22 @@ class ProjectViewSet(ModelViewSet):
                 return Response(serializer.data)
             return Response('issue not found')
 
-        def create_comment():
+        def comment_create():
             issue_set = Issue.objects.filter(id=issue_pk)
             if len(issue_set):
                 serializer = CommentsSerializer(data=request.data)
                 if serializer.is_valid():
                     comment = serializer.save(author=request.user, issue=issue_set.first())
-                    return Response(CommentsSerializer(instance=comment).data)
+                    return Response(CommentsSerializer(instance=comment).data, status=201)
                 return Response(serializer.errors)
 
         if request.method == 'GET':
             return list_comment()
         elif request.method == 'POST':
-            return create_comment()
+            return comment_create()
 
-    @action(methods=['get', 'patch', 'delete'], detail=True, url_path='issue/(?P<issue_pk>[^/.]+)/comments/('
-                                                                      '?P<comment_pk>[^/.]+)',
+    @action(methods=['get', 'patch', 'delete', 'put'], detail=True, url_path='issue/(?P<issue_pk>[^/.]+)/comments/('
+                                                                             '?P<comment_pk>[^/.]+)',
             url_name='comment_detail-&-update-&-delete',
             permission_classes=[(IsAuthor() or IsContributor()) and IsAuthenticated()])
     def comment_detail(self, request, pk=None, issue_pk=None, comment_pk=None):
@@ -250,7 +250,7 @@ class ProjectViewSet(ModelViewSet):
                 comment = Comments.objects.get(id=comment_pk)
                 msg = f'comment({comment.id}) has been deleted'
                 comment.delete()
-                return Response(msg)
+                return Response(msg, status=204)
             return Response('comment not found')
 
         def issue_tester():
@@ -263,7 +263,7 @@ class ProjectViewSet(ModelViewSet):
 
         if request.method == 'GET':
             return detail_comment()
-        elif request.method == 'PATCH':
+        elif request.method == 'PATCH' or request.method == 'PUT':
             return update_comment()
         elif request.method == 'DELETE':
             return delete_comment()
