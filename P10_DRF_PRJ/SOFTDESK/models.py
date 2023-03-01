@@ -25,26 +25,30 @@ class Issue(models.Model):
     project = models.ForeignKey('Project', on_delete=models.CASCADE,
                                 related_name='issues', )
     status = models.CharField(max_length=80, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-
     author = models.ForeignKey('User', on_delete=models.CASCADE,
                                related_name='issues', blank=False)
     assigned_to = models.ForeignKey('Contributors',
                                     on_delete=models.CASCADE,
                                     related_name='issues')
+    created_at = models.DateTimeField(auto_now_add=True)
 
 
 class Comments(models.Model):
     description = models.TextField(max_length=250)
-    created_at = models.DateTimeField(auto_now_add=True)
 
     author = models.ForeignKey('User', on_delete=models.CASCADE,
                                related_name='comments')
     issue = models.ForeignKey('Issue', on_delete=models.CASCADE,
                               related_name='comments')
+    created_at = models.DateTimeField(auto_now_add=True)
 
 
 class Contributors(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE,
+                             related_name='contributors', blank=False)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE,
+                                related_name='contributors', blank=False)
+
     readOnly = 'R'
     readEdit = 'RE'
     readEditDelete = 'RED'
@@ -57,7 +61,4 @@ class Contributors(models.Model):
                                   default=readOnly, )
     role = models.CharField(max_length=25, blank=True)
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE,
-                             related_name='contributors', blank=False)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE,
-                                related_name='contributors', blank=False)
+
