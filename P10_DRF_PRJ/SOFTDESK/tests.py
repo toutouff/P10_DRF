@@ -101,9 +101,9 @@ class TestProject(SoftDeskTestCase):
 
         self.client.credentials(
             HTTP_AUTHORIZATION=self.get_token(self.client.post('/login/', {'username': 'user1', 'password': 'user1'})))
-        data = {'user_id': 2}
+        data = {'permission': 'RE', 'role': 'test_role', 'user': self.user2.id}
         response = self.client.post(url, data)
-        self.assertEqual(response.status_code, 201, response.status_code)
+        self.assertEqual(response.status_code, 201, response.data)
         self.assertEqual(self.project2.contributors.count(), contributors_count + 1)
 
     # test if author can get contributor's list from project
@@ -111,7 +111,7 @@ class TestProject(SoftDeskTestCase):
         url = reverse_lazy('projects-contributors', kwargs={'pk': self.project2.id})
         self.client.credentials(
             HTTP_AUTHORIZATION=self.get_token(self.client.post('/login/', {'username': 'user1', 'password': 'user1'})))
-        response = self.client.get(url)
+        self.client.get(url)
 
     def test_author_can_delete_project(self):
         url = reverse_lazy('projects-contributors-delete', kwargs={'pk': self.project2.id, 'contributor_pk':
@@ -146,7 +146,7 @@ class TestProject(SoftDeskTestCase):
         client = self.log_user(self.client, self.userinfo)
         data = {'title': 'test', 'description': 'test_edit', 'status': 'open', 'assigned_to': self.contributor.id}
         response = client.put(url, data)
-        self.assertEqual(response.status_code, 200, response.data)
+        self.assertEqual(response.status_code, 201, response.data)
         self.assertIn('test_edit', response.data['description'])
 
     def test_user_can_delete_issue(self):
@@ -179,7 +179,7 @@ class TestProject(SoftDeskTestCase):
         client = self.log_user(self.client, self.userinfo)
         data = {'description': 'test_edit'}
         response = client.put(url, data)
-        self.assertEqual(response.status_code, 200, response.data)
+        self.assertEqual(response.status_code, 201, response.data)
         self.assertIn('test_edit', response.data['description'])
 
     def test_user_can_delete_comment(self):

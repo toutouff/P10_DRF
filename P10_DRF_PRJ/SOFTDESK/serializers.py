@@ -1,5 +1,4 @@
 from rest_framework.serializers import ModelSerializer
-from rest_framework.serializers import SerializerMethodField
 
 from .models import Project, Issue, Comments, Contributors, User
 
@@ -12,11 +11,11 @@ class ProjectSerializer(ModelSerializer):
 
 
 class ContributorsSerializer(ModelSerializer):
-    user = SerializerMethodField()
+    """user = SerializerMethodField()
 
     def get_user(self, obj):
         queryset = User.objects.filter(contributors=obj)
-        return UserSerializer(queryset, many=True).data
+        return UserSerializer(queryset, many=True).data"""
 
     class Meta:
         model = Contributors
