@@ -27,16 +27,7 @@ class IsContributor(BasePermission):
 
 
 @api_view(['POST'])
-def register(request):
-    username, password = request.POST['username'], request.POST['password']
-    user = User.objects.create_user(username=username, password=password)
-    if user is not None:
-        return Response({'status': 'registered'})
-    return Response({'status': 'registration failed'})
-
-
-@api_view(['POST'])
-def register_2(request):
+def sign_up(request):
     serializer = UserCreationSerializer(data=request.data)
     if serializer.is_valid():
         user = serializer.save()

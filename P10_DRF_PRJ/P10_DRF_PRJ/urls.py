@@ -19,7 +19,7 @@ from rest_framework import routers
 from rest_framework_simplejwt.views import (TokenObtainPairView,
                                             TokenRefreshView)
 
-from SOFTDESK.views import ProjectViewSet, register_2
+from SOFTDESK.views import ProjectViewSet, sign_up
 
 router = routers.SimpleRouter()
 router.register(r'project', ProjectViewSet, basename='projects')
@@ -30,7 +30,7 @@ urlpatterns = [
          name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(),
          name='token_refresh'),
-    path('register/', register_2),
+    path('register/', sign_up),
     path('login/', TokenObtainPairView.as_view()),
     path('api/', include(router.urls))
 ]
