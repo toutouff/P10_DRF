@@ -14,16 +14,26 @@ from .serializers import ProjectSerializer, ProjectDetailSerializer, \
 
 
 class IsAuthor(BasePermission):
+    def has_permission(self, request, view):
+        if request.user.is_authenticated:
+            return True
+
     def has_object_permission(self, request, view, obj):
-        return obj.author == request.user
+        if obj.author == request.user:
+            return True
+        return False
 
 
-class IsContributor(BasePermission):
+class IsProjectContributor(BasePermission):
+
+    def has_permission(self, request, view):
+        if request.user.is_authenticated:
+            return True
+
     def has_object_permission(self, request, view, obj):
-        if Contributors.objects.filter(user=request.user,
-                                       project=obj).exists():
-            return Contributors.objects.filter(user=request.user,
-                                               project=obj).first().permision != 'R'
+        for contributor in obj.contributors:
+            if contributor == request.user:
+                return True
         return False
 
 

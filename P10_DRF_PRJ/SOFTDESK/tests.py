@@ -191,3 +191,5 @@ class TestProject(SoftDeskTestCase):
         response = client.delete(url)
         self.assertEqual(response.status_code, 204, response.data)
         self.assertEqual(self.issue.comments.count(), count - 1)
+
+
