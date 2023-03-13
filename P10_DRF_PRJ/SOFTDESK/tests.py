@@ -1,7 +1,9 @@
+from sys import stderr
+
 from django.urls import reverse_lazy
 from rest_framework.test import APITestCase
 
-from SOFTDESK.models import User, Project, Contributors, Issue, Comments
+from SOFTDESK.models import User,Project,Contributors,Issue,Comments
 
 
 class SoftDeskTestCase(APITestCase):
@@ -17,6 +19,17 @@ class SoftDeskTestCase(APITestCase):
         self.issue = Issue.objects.create(title='issue1', description='issue1', author=self.user1,
                                           project=self.project2, status='open', assigned_to=self.contributor)
         self.comment = Comments.objects.create(description='comment1', author=self.user1, issue=self.issue)
+        self.urls_data = [('projects-list', {}),
+                          ('projects-detail', {'pk': self.project2.id}),
+                          ('projects-contributors', {'pk': self.project2.id}),
+                          ('projects-contributors-delete',
+                           {'pk': self.project2.id, 'contributor_pk': self.contributor.id}),
+                          ('projects-issue_add-list', {'pk': self.project2.id}),
+                          ('projects-issue_update-delete', {'pk': self.project2.id, 'issue_pk': self.issue.id}),
+                          ('projects-comment_create-&-get', {'pk': self.project2.id, 'issue_pk': self.issue.id}),
+                          ('projects-comment_detail-&-update-&-delete',
+                           {'pk': self.project2.id, 'issue_pk': self.issue.id,
+                            'comment_pk': self.comment.id})]
 
     @staticmethod
     def get_token(response):
@@ -199,20 +212,42 @@ class TestProject(SoftDeskTestCase):
 # todo : make custom test class for each model
 
 
-class AuthentificationTestCase(SoftDeskTestCase):
-    def setup(self):
-        self.urls_data = [('projects-list', {}),
-                          ('projects-detail', {'pk': self.project2.id}),
-                          ('projects-contributors', {'pk': self.project2.id}),
-                          ('projects-contributors-delete',
-                           {'pk': self.project2.id, 'contributor_pk': self.contributor.id}),
-                          ('projects-issue_add-list', {'pk': self.project2.id}),
-                          ('projects-issue_update-delete', {'pk': self.project2.id, 'issue_pk': self.issue.id}),
-                          ('projects-comment_create-&-get', {'pk': self.project2.id, 'issue_pk': self.issue.id}),
-                          ('projects-comment_detail-&-update-&-delete',
-                           {'pk': self.project2.id, 'issue_pk': self.issue.id,
-                            'comment_pk': self.comment.id})]
+class SecurityTestCase(SoftDeskTestCase):
+
+    def AnonymousGetTest(self,test_data,client):
+        url = reverse_lazy(test_data[0],kwargs = test_data[1])
+        response = client.get(url)
+        message = f'method : get\n url : {url} \n status code : {response.status_code} \n data : {response.data}'
+        self.assertEqual(response.status_code,401,message)
+        print(message,file=stderr)
+
+    def AnonymousPostTest(self,test_data,client):
+        url = reverse_lazy(test_data[0],kwargs=test_data[1])
+        response = client.post(url)
+        message = f'method : post\n url : {url} \n status code : {response.status_code} \n data : {response.data}'
+        self.assertEqual(response.status_code,401,message)
+        print(message,file=stderr)
+
+    def AnonymousPutTest(self,test_data,client):
+        url = reverse_lazy(test_data[0],kwargs=test_data[1])
+        response = client.put(url)
+        message = f'method : put\n url : {url} \n status code : {response.status_code} \n data : {response.data}'
+        self.assertEqual(response.status_code,401,message)
+        print(message,file=stderr)
+
+    def AnonymousDelTest(self,test_data,client):
+        url = reverse_lazy(test_data[0],kwargs=test_data[1])
+        response = client.delete(url)
+        message = f'method : del\n url : {url} \n status code : {response.status_code} \n data : {response.data}'
+        self.assertEqual(response.status_code,401,message)
+        print(message,file=stderr)
 
 
-
-
+class AuthentificationTestCase(SecurityTestCase):
+    def test_all_url(self):
+        for url_data in self.urls_data:
+            client = self.client
+            self.AnonymousGetTest(url_data,client)
+            self.AnonymousPostTest(url_data,client)
+            self.AnonymousPutTest(url_data,client)
+            self.AnonymousDelTest(url_data,client)
