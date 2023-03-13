@@ -7,8 +7,10 @@ from SOFTDESK.models import User, Project, Contributors, Issue, Comments
 class SoftDeskTestCase(APITestCase):
     def setUp(self):
         self.userinfo = {'username': 'user1', 'password': 'user1'}
+        self.user3info = {'username': 'user3', 'password': 'user3'}
         self.user1 = User.objects.create_user(username='user1', password='user1')
         self.user2 = User.objects.create_user(username='user2', password='user2')
+        self.user3 = User.objects.create_user(username='user3', password='user3')
         self.project2 = Project.objects.create(title='project2', description='project2', author=self.user1)
         self.contributor = Contributors.objects.create(permission='Read and Edit', role='test_role',
                                                        user_id=self.user2.id, project_id=self.project2.id)
@@ -191,5 +193,26 @@ class TestProject(SoftDeskTestCase):
         response = client.delete(url)
         self.assertEqual(response.status_code, 204, response.data)
         self.assertEqual(self.issue.comments.count(), count - 1)
+
+
+# todo : Check Top10 owasp
+# todo : make custom test class for each model
+
+
+class AuthentificationTestCase(SoftDeskTestCase):
+    def setup(self):
+        self.urls_data = [('projects-list', {}),
+                          ('projects-detail', {'pk': self.project2.id}),
+                          ('projects-contributors', {'pk': self.project2.id}),
+                          ('projects-contributors-delete',
+                           {'pk': self.project2.id, 'contributor_pk': self.contributor.id}),
+                          ('projects-issue_add-list', {'pk': self.project2.id}),
+                          ('projects-issue_update-delete', {'pk': self.project2.id, 'issue_pk': self.issue.id}),
+                          ('projects-comment_create-&-get', {'pk': self.project2.id, 'issue_pk': self.issue.id}),
+                          ('projects-comment_detail-&-update-&-delete',
+                           {'pk': self.project2.id, 'issue_pk': self.issue.id,
+                            'comment_pk': self.comment.id})]
+
+
 
 
