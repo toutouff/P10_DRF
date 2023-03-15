@@ -1,5 +1,6 @@
 # from django.db import transaction
 # from django.db.models import query
+from sys import stderr
 
 from django.contrib.auth import authenticate
 from rest_framework.decorators import api_view, action
@@ -24,7 +25,7 @@ class IsAuthor(BasePermission):
         return False
 
 
-class IsProjectContributor(BasePermission):
+class IsContributor(BasePermission):
 
     def has_permission(self, request, view):
         if request.user.is_authenticated:
@@ -32,7 +33,7 @@ class IsProjectContributor(BasePermission):
 
     def has_object_permission(self, request, view, obj):
         for contributor in obj.contributors:
-            if contributor == request.user:
+            if contributor.user.id == request.user.id:
                 return True
         return False
 
@@ -57,6 +58,7 @@ def login(request):
 
 
 class ProjectViewSet(ModelViewSet):
+    model = Project
     serializer_class = ProjectSerializer
     permission_classes = [IsAuthenticated()]
 
@@ -64,15 +66,17 @@ class ProjectViewSet(ModelViewSet):
         kwargs['partial'] = True
         return super().update(request, *args, **kwargs)
 
+    def get_queryset(self):
+        user = self.request.user
+        authorset = Project.objects.filter(author = user)
+        return authorset
+
     def get_permissions(self):
         if self.action == 'list':
-            return [IsAuthenticated()]
+            return [IsAuthor()or IsContributor(),IsAuthenticated()]
         elif self.action == 'retrieve':
             return [IsAuthor() or IsContributor(), IsAuthenticated()]
         return [IsAuthenticated()]
-
-    def get_queryset(self):
-        return Project.objects.filter(author=self.request.user)
 
     def get_serializer_class(self):
         if self.action == 'retrieve':

@@ -14,8 +14,11 @@ class SoftDeskTestCase(APITestCase):
         self.user2 = User.objects.create_user(username='user2', password='user2')
         self.user3 = User.objects.create_user(username='user3', password='user3')
         self.project2 = Project.objects.create(title='project2', description='project2', author=self.user1)
+        self.project3 = Project.objects.create(title='project3',description='project3',author=self.user2)
         self.contributor = Contributors.objects.create(permission='Read and Edit', role='test_role',
                                                        user_id=self.user2.id, project_id=self.project2.id)
+        self.contributor2 = Contributors.objects.create(permission='Read and Edit',role='test_role',
+                                                        user_id = self.user1.id,project_id=self.project3.id)
         self.issue = Issue.objects.create(title='issue1', description='issue1', author=self.user1,
                                           project=self.project2, status='open', assigned_to=self.contributor)
         self.comment = Comments.objects.create(description='comment1', author=self.user1, issue=self.issue)
@@ -61,7 +64,7 @@ class TestUser(SoftDeskTestCase):
 
 
 class TestProject(SoftDeskTestCase):
-    # test if user can get project list
+    # test if author can get project list
     def test_user_can_get_project_list(self):
         url = reverse_lazy('projects-list')
         login_response = self.client.post('/login/', {'username': 'user1', 'password': 'user1'})
@@ -69,6 +72,7 @@ class TestProject(SoftDeskTestCase):
         self.client.credentials(HTTP_AUTHORIZATION=token)
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200, response.data)
+        print(response.data)
 
     # test if user can create project
     def test_user_can_create_project(self):
@@ -78,10 +82,10 @@ class TestProject(SoftDeskTestCase):
         data = {'title': 'test', 'description': 'test'}
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, 201, response.data)
-        self.assertEqual(response.data, {'id': 2, 'title': 'test', 'description': 'test'})
+        self.assertEqual(response.data, {'id': 3, 'title': 'test', 'description': 'test'})
 
-    # test if user can get project detail
-    def test_user_can_get_project_detail(self):
+    # test if author can get project detail
+    def test_author_get_project_detail(self):
         url = reverse_lazy('projects-detail', kwargs={'pk': self.project2.id})
         self.client.credentials(
             HTTP_AUTHORIZATION=self.get_token(self.client.post('/login/', {'username': 'user1', 'password': 'user1'})))
@@ -89,8 +93,8 @@ class TestProject(SoftDeskTestCase):
         self.assertEqual(response.status_code, 200, response.data)
         self.assertIn('title', response.data)
 
-    # test if user can update project
-    def test_user_can_update_project(self):
+    # test if author can update project
+    def test_author_can_update_project(self):
         url = reverse_lazy('projects-detail', kwargs={'pk': self.project2.id})
         self.client.credentials(
             HTTP_AUTHORIZATION=self.get_token(self.client.post('/login/', {'username': 'user1', 'password': 'user1'})))
@@ -99,18 +103,23 @@ class TestProject(SoftDeskTestCase):
         self.assertEqual(response.status_code, 200, response.data)
         self.assertIn('test_edit', response.data['description'])
 
-    def test_user_can_delete_project(self):
+    # test if user can delete project
+    def test_author_can_delete_project(self):
         # todo: check if project deletion also deletes related issues and comments
         url = reverse_lazy('projects-detail', kwargs={'pk': self.project2.id})
         self.client.credentials(
             HTTP_AUTHORIZATION=self.get_token(self.client.post('/login/', {'username': 'user1', 'password': 'user1'})))
         initial_count = Project.objects.count()
+        print(initial_count)
         response = self.client.delete(url)
         self.assertEqual(response.status_code, 204, response.data)
-        self.assertEqual(Project.objects.count(), initial_count - 1)
+        self.assertEqual(Project.objects.count(), initial_count - 1,response.data)
+
+
+        #### CONTRIBUTOR TEST ####
 
     # test if user can add contributor to project
-    def test_user_can_add_contributor_to_project(self):
+    def test_author_can_add_contributor_to_project(self):
         url = reverse_lazy('projects-contributors', kwargs={'pk': self.project2.id})
         contributors_count = self.project2.contributors.count()
 
@@ -126,19 +135,25 @@ class TestProject(SoftDeskTestCase):
         url = reverse_lazy('projects-contributors', kwargs={'pk': self.project2.id})
         self.client.credentials(
             HTTP_AUTHORIZATION=self.get_token(self.client.post('/login/', {'username': 'user1', 'password': 'user1'})))
-        self.client.get(url)
+        response = self.client.get(url)
+        # TODO: ASSERT DATA
+        print(response.data)
 
-    def test_author_can_delete_project(self):
+    def test_author_can_delete_contributor(self):
         url = reverse_lazy('projects-contributors-delete', kwargs={'pk': self.project2.id, 'contributor_pk':
             self.contributor.id})
         self.client.credentials(HTTP_AUTHORIZATION=self.get_token(self.client.post('/login/', {'username': 'user1',
                                                                                                'password': 'user1'})))
-        count = Contributors.objects.all().count()
+        count = self.project2.contributors.count()
         response = self.client.delete(url)
         self.assertEqual(response.status_code, 204)
         self.assertEqual(count - 1, self.project2.contributors.count())
 
-    def test_user_can_get_issues(self):
+
+
+    ### ISSUE TEST ###
+
+    def test_author_can_get_issues(self):
         url = reverse_lazy('projects-issue_add-list', kwargs={'pk': self.project2.id})
         self.client.credentials(HTTP_AUTHORIZATION=self.get_token(self.client.post('/login/', {'username': 'user1',
                                                                                                'password': 'user1'})))
@@ -146,7 +161,7 @@ class TestProject(SoftDeskTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn('title', response.data[0])
 
-    def test_user_can_create_issue(self):
+    def test_author_can_create_issue(self):
         url = reverse_lazy('projects-issue_add-list', kwargs={'pk': self.project2.id})
         count = self.project2.issues.count()
         self.client.credentials(HTTP_AUTHORIZATION=self.get_token(self.client.post('/login/', {'username': 'user1',
@@ -156,7 +171,7 @@ class TestProject(SoftDeskTestCase):
         self.assertEqual(response.status_code, 201, response.data)
         self.assertEqual(self.project2.issues.count(), count + 1)
 
-    def test_user_can_update_issue(self):
+    def test_author_can_update_issue(self):
         url = reverse_lazy('projects-issue_update-delete', kwargs={'pk': self.project2.id, 'issue_pk': self.issue.id})
         client = self.log_user(self.client, self.userinfo)
         data = {'title': 'test', 'description': 'test_edit', 'status': 'open', 'assigned_to': self.contributor.id}
@@ -164,7 +179,7 @@ class TestProject(SoftDeskTestCase):
         self.assertEqual(response.status_code, 201, response.data)
         self.assertIn('test_edit', response.data['description'])
 
-    def test_user_can_delete_issue(self):
+    def test_author_can_delete_issue(self):
         url = reverse_lazy('projects-issue_update-delete', kwargs={'pk': self.project2.id, 'issue_pk': self.issue.id})
         client = self.log_user(self.client, self.userinfo)
         count = self.project2.issues.count()
@@ -172,7 +187,7 @@ class TestProject(SoftDeskTestCase):
         self.assertEqual(response.status_code, 204, response.data)
         self.assertEqual(self.project2.issues.count(), count - 1)
 
-    def test_user_can_create_comment(self):
+    def test_author_can_create_comment(self):
         url = reverse_lazy('projects-comment_create-&-get', kwargs={'pk': self.project2.id, 'issue_pk': self.issue.id})
         count = self.issue.comments.count()
         client = self.log_user(self.client, self.userinfo)
@@ -181,14 +196,14 @@ class TestProject(SoftDeskTestCase):
         self.assertEqual(response.status_code, 201, response.data)
         self.assertEqual(self.issue.comments.count(), count + 1)
 
-    def test_user_can_get_comments(self):
+    def test_author_can_get_comments(self):
         url = reverse_lazy('projects-comment_create-&-get', kwargs={'pk': self.project2.id, 'issue_pk': self.issue.id})
         client = self.log_user(self.client, self.userinfo)
         response = client.get(url)
         self.assertEqual(response.status_code, 200, response.data)
         self.assertIn('comment1', response.data[0]['description'])
 
-    def test_user_can_update_coment(self):
+    def test_author_can_update_coment(self):
         url = reverse_lazy('projects-comment_detail-&-update-&-delete', kwargs={'pk': self.project2.id, 'issue_pk':
             self.issue.id, 'comment_pk': self.comment.id})
         client = self.log_user(self.client, self.userinfo)
@@ -197,7 +212,7 @@ class TestProject(SoftDeskTestCase):
         self.assertEqual(response.status_code, 201, response.data)
         self.assertIn('test_edit', response.data['description'])
 
-    def test_user_can_delete_comment(self):
+    def test_author_can_delete_comment(self):
         url = reverse_lazy('projects-comment_detail-&-update-&-delete',
                            kwargs={'pk': self.project2.id, 'issue_pk': self.issue.id,
                                    'comment_pk': self.comment.id})
@@ -214,32 +229,32 @@ class TestProject(SoftDeskTestCase):
 
 class SecurityTestCase(SoftDeskTestCase):
 
-    def AnonymousGetTest(self,test_data,client):
+    def GetTest(self,test_data,client,statuscode=401):
         url = reverse_lazy(test_data[0],kwargs = test_data[1])
         response = client.get(url)
         message = f'method : get\n url : {url} \n status code : {response.status_code} \n data : {response.data}'
-        self.assertEqual(response.status_code,401,message)
+        self.assertEqual(response.status_code,statuscode,message)
         print(message,file=stderr)
 
-    def AnonymousPostTest(self,test_data,client):
-        url = reverse_lazy(test_data[0],kwargs=test_data[1])
-        response = client.post(url)
+    def PostTest(self,url_data,client,statuscode=401,test_data=None):
+        url = reverse_lazy(url_data[0],kwargs=url_data[1])
+        response = client.post(url,data= test_data)
         message = f'method : post\n url : {url} \n status code : {response.status_code} \n data : {response.data}'
-        self.assertEqual(response.status_code,401,message)
+        self.assertEqual(response.status_code,statuscode,message)
         print(message,file=stderr)
 
-    def AnonymousPutTest(self,test_data,client):
+    def PutTest(self,test_data,client,status_code=401):
         url = reverse_lazy(test_data[0],kwargs=test_data[1])
         response = client.put(url)
         message = f'method : put\n url : {url} \n status code : {response.status_code} \n data : {response.data}'
-        self.assertEqual(response.status_code,401,message)
+        self.assertEqual(response.status_code,status_code,message)
         print(message,file=stderr)
 
-    def AnonymousDelTest(self,test_data,client):
+    def DelTest(self,test_data,client,status_code=401):
         url = reverse_lazy(test_data[0],kwargs=test_data[1])
         response = client.delete(url)
         message = f'method : del\n url : {url} \n status code : {response.status_code} \n data : {response.data}'
-        self.assertEqual(response.status_code,401,message)
+        self.assertEqual(response.status_code,status_code,message)
         print(message,file=stderr)
 
 
@@ -247,7 +262,30 @@ class AuthentificationTestCase(SecurityTestCase):
     def test_all_url(self):
         for url_data in self.urls_data:
             client = self.client
-            self.AnonymousGetTest(url_data,client)
-            self.AnonymousPostTest(url_data,client)
-            self.AnonymousPutTest(url_data,client)
-            self.AnonymousDelTest(url_data,client)
+            self.GetTest(url_data, client)
+            self.PostTest(url_data, client)
+            self.PutTest(url_data, client)
+            self.DelTest(url_data, client)
+
+
+
+
+# TODO : AutorizationTestCase
+# TODO : PermissionTestCase
+
+
+class AutorizationTestCase(SecurityTestCase):
+    def test_all_url(self):
+        for url_data in self.urls_data:
+            client = self.client
+            self.log_user(client,user_info=self.user3info)
+            if self.urls_data.index(url_data) == 0:
+                self.GetTest(url_data, client, statuscode=200)
+                self.PostTest(url_data, client, statuscode=400)
+                self.PutTest(url_data, client, status_code=405)
+                self.DelTest(url_data, client,status_code=405)
+            else:
+                self.GetTest(url_data, client)
+                self.PostTest(url_data, client)
+                self.PutTest(url_data, client)
+                self.DelTest(url_data, client)
