@@ -1,0 +1,945 @@
+{
+	"info": {
+		"_postman_id": "aba5dbed-5d24-4744-b115-39e33372c912",
+		"name": "SoftDesk",
+		"description": "this collection actually represent the Django's app from the project structure",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_uid": "25555539-aba5dbed-5d24-4744-b115-39e33372c912"
+	},
+	"item": [
+		{
+			"name": "auth",
+			"item": [
+				{
+					"name": "register",
+					"id": "c5a3c462-495e-4dbf-92c4-21d1871b8cc5",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://192.168.1.129:8000/register/",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"129"
+							],
+							"port": "8000",
+							"path": [
+								"register",
+								""
+							]
+						},
+						"description": "endpoint for user registration\n\nusername and password are mandatory"
+					},
+					"response": []
+				},
+				{
+					"name": "get token",
+					"id": "a04e61f5-fe25-43f3-9ac2-5c44d78e3d6d",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://192.168.1.129:8000/api/token/",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"129"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"token",
+								""
+							]
+						},
+						"description": "Login endpoint :\n\nneed username(string) and password(string) inside body form-data\n\nreturn access and refresh Json Web Token"
+					},
+					"response": [
+						{
+							"id": "7531c07a-11c0-40fa-8765-57dec2f0b9bd",
+							"name": "get token",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "username",
+											"value": "{{username}}",
+											"type": "text"
+										},
+										{
+											"key": "password",
+											"value": "{{password}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "http://192.168.1.129:8000/api/token/",
+									"protocol": "http",
+									"host": [
+										"192",
+										"168",
+										"1",
+										"129"
+									],
+									"port": "8000",
+									"path": [
+										"api",
+										"token",
+										""
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Date",
+									"value": "Sat, 28 Jan 2023 20:39:52 GMT"
+								},
+								{
+									"key": "Server",
+									"value": "WSGIServer/0.2 CPython/3.10.8"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Vary",
+									"value": "Accept"
+								},
+								{
+									"key": "Allow",
+									"value": "POST, OPTIONS"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "DENY"
+								},
+								{
+									"key": "Content-Length",
+									"value": "483"
+								},
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "Referrer-Policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "Cross-Origin-Opener-Policy",
+									"value": "same-origin"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"refresh\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTY3NTAyNDc5MiwiaWF0IjoxNjc0OTM4MzkyLCJqdGkiOiIwZmFkNzZiZWU0YjA0OWIxYmUzZmU0MDJhZjdjZTdhOSIsInVzZXJfaWQiOjh9.TPg0c0NlG-IjG9MMKzfisMgPoYb2w76GMOvzS211RzM\",\n    \"access\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjc0OTM4NjkyLCJpYXQiOjE2NzQ5MzgzOTIsImp0aSI6ImY4ZWI2NjdmOWM4YzRmOWRhYmEwYTFlNTA5YzM5NjJmIiwidXNlcl9pZCI6OH0.uYkm6_5WFCtx7H8vQcHwCdKNow_udmB_sLGW_d5i1p8\"\n}"
+						}
+					]
+				},
+				{
+					"name": "refresh",
+					"id": "12479c42-c830-44ff-bcb1-5ab615a99c14",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "refresh",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTY3NjIxNTU3NSwiaWF0IjoxNjc2MTI5MTc1LCJqdGkiOiIxYmRkMDhmMzE0ZTA0Y2YwOTY4OGFlMDZlMjc0ODQ4NSIsInVzZXJfaWQiOjh9.4M_9QtZBXE5aKoMSmYudDDXcqE1rTb_DpYVeXAI3QpM",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://192.168.1.129:8000/api/token/refresh/",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"129"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"token",
+								"refresh",
+								""
+							]
+						},
+						"description": "endpoint to refresh JWT\n\ninput : JWT refresh token inside form body\n\nreturn : JWT access token"
+					},
+					"response": []
+				}
+			],
+			"id": "3f4ab750-76cd-41c3-b694-d8339c25e332",
+			"description": "This folder regroups every endpoint for auth"
+		},
+		{
+			"name": "comment",
+			"item": [
+				{
+					"name": "/issue/id/comment List",
+					"id": "699e7e75-c446-4f86-8397-20908c09c5d8",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"url": {
+							"raw": "http://192.168.1.129:8000/api/project/{{id}}/issue/{{issue_id}}/comments",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"129"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"project",
+								"{{id}}",
+								"issue",
+								"{{issue_id}}",
+								"comments"
+							]
+						},
+						"description": "return a list of all comment id and descritpion"
+					},
+					"response": []
+				},
+				{
+					"name": "/issue/id/comment Create",
+					"id": "bde66d36-e1b1-4f3b-a3b7-a4b988bd429a",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "description",
+									"value": "le test du commentaire",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://192.168.1.129:8000/api/project/{{id}}/issue/{{issue_id}}/comments/",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"129"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"project",
+								"{{id}}",
+								"issue",
+								"{{issue_id}}",
+								"comments",
+								""
+							]
+						},
+						"description": "create a comment and return it's data or errors if there is"
+					},
+					"response": []
+				},
+				{
+					"name": "/issue/id/comment/id/",
+					"id": "c311af34-40c4-40ba-9eeb-9ef11d539a12",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "description",
+									"value": "",
+									"type": "text",
+									"disabled": true
+								}
+							]
+						},
+						"url": {
+							"raw": "http://192.168.1.129:8000/api/project/{{id}}/issue/{{issue_id}}/comments/{{comment_id}}/",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"129"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"project",
+								"{{id}}",
+								"issue",
+								"{{issue_id}}",
+								"comments",
+								"{{comment_id}}",
+								""
+							]
+						},
+						"description": "return detailed data of comment by specifiying comment id"
+					},
+					"response": []
+				},
+				{
+					"name": "/issue/id/comment/id/ Update",
+					"id": "f66a0729-f31b-48d8-ab14-b42efb5a0af9",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "description",
+									"value": "test edit",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://192.168.1.129:8000/api/project/{{id}}/issue/{{issue_id}}/comments/{{comment_id}}/",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"129"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"project",
+								"{{id}}",
+								"issue",
+								"{{issue_id}}",
+								"comments",
+								"{{comment_id}}",
+								""
+							]
+						},
+						"description": "partial or full update of comment data\n\nreturn comment data or serializer data"
+					},
+					"response": []
+				},
+				{
+					"name": "/issue/id/comment/id/ Delete",
+					"id": "15faa697-ba9a-4ab2-8587-3e3f34f462e2",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "description",
+									"value": "test edit",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://192.168.1.129:8000/api/project/{{id}}/issue/{{issue_id}}/comments/{{comment_id}}/",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"129"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"project",
+								"{{id}}",
+								"issue",
+								"{{issue_id}}",
+								"comments",
+								"{{comment_id}}",
+								""
+							]
+						},
+						"description": "to delete a comment\n\nreturn a confirmation message"
+					},
+					"response": []
+				}
+			],
+			"id": "0a14cbfb-88c4-4560-800a-5a1d00bb3425",
+			"description": "all the request to manage comment operation"
+		},
+		{
+			"name": "issue",
+			"item": [
+				{
+					"name": "/issue get issue_list",
+					"id": "26eb5851-764f-4f5b-b231-549074d3a6df",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"url": {
+							"raw": "http://192.168.1.129:8000/api/project/{{id}}/issue/",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"129"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"project",
+								"{{id}}",
+								"issue",
+								""
+							]
+						},
+						"description": "return all issue form project"
+					},
+					"response": []
+				},
+				{
+					"name": "/issue (add issue)",
+					"id": "4de31a54-448e-4240-9523-a1f50cc12170",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"url": {
+							"raw": "http://192.168.1.129:8000/api/project/{{id}}/issue/",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"129"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"project",
+								"{{id}}",
+								"issue",
+								""
+							]
+						},
+						"description": "add a issue to the project and return it's data or errors message"
+					},
+					"response": []
+				},
+				{
+					"name": "/issue/id get issue_detail",
+					"id": "d362f4d7-9c14-4840-91b6-57df9fd01f7a",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"url": {
+							"raw": "http://192.168.1.129:8000/api/project/{{id}}/issue/{{issue_id}}",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"129"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"project",
+								"{{id}}",
+								"issue",
+								"{{issue_id}}"
+							]
+						},
+						"description": "return issue detail by specifyng it's id"
+					},
+					"response": []
+				},
+				{
+					"name": "/issue/id update",
+					"id": "b4fadac0-7f16-471f-bf1b-d97039f1e07b",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "status",
+									"value": "en cours",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://192.168.1.129:8000/api/project/{{id}}/issue/{{issue_id}}/",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"129"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"project",
+								"{{id}}",
+								"issue",
+								"{{issue_id}}",
+								""
+							]
+						},
+						"description": "partial of full upgrade of issue\n\nreturn issue data or error"
+					},
+					"response": []
+				}
+			],
+			"id": "699d65cf-b5dc-4fe3-84e0-6a38e629bb25",
+			"description": "all the request to manage issue"
+		},
+		{
+			"name": "contributor",
+			"item": [
+				{
+					"name": "/users",
+					"id": "4b10d79e-40f9-4264-8053-3a0dd048344a",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://192.168.1.129:8000/api/project/{{id}}/user/",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"129"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"project",
+								"{{id}}",
+								"user",
+								""
+							]
+						},
+						"description": "return a list of all contributor id"
+					},
+					"response": []
+				},
+				{
+					"name": "/user (add contributors)",
+					"id": "4a877813-4a18-4260-87de-c94c0105c286",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "user_id",
+									"value": "1",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://192.168.1.129:8000/api/project/{{id}}/user/",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"129"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"project",
+								"{{id}}",
+								"user",
+								""
+							]
+						},
+						"description": "add contributor by specifyng user id"
+					},
+					"response": []
+				},
+				{
+					"name": "/user/id",
+					"id": "6d480e3a-5a86-44d8-92ce-fc5c8904d4b7",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://192.168.1.129:8000/api/project/{{id}}/user/{{contributor_id}}/",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"129"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"project",
+								"{{id}}",
+								"user",
+								"{{contributor_id}}",
+								""
+							]
+						},
+						"description": "delete contributor buy specifying contributor id"
+					},
+					"response": []
+				}
+			],
+			"id": "61d4b02a-c548-41b0-a0e3-638849110d5e",
+			"description": "all the request to manage contributor inside a project"
+		},
+		{
+			"name": "project",
+			"item": [
+				{
+					"name": "project",
+					"id": "b56f68e8-6355-44f9-9041-f503c65381f1",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://192.168.1.129:8000/api/project/",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"129"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"project",
+								""
+							]
+						},
+						"description": "Return a list of all project where user is contributor or author user need to be logged in"
+					},
+					"response": []
+				},
+				{
+					"name": "project",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "72132945-bb4f-4a47-bb7b-ee735cedb0fa",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"id": "091723cf-0dfc-4d03-a650-990ef61a500e",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "title",
+									"value": "test-project",
+									"type": "text"
+								},
+								{
+									"key": "description",
+									"value": "test-description",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://192.168.1.129:8000/api/project/",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"129"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"project",
+								""
+							]
+						},
+						"description": "create a project and return it's data or errors if there is"
+					},
+					"response": []
+				},
+				{
+					"name": "project/id",
+					"id": "f8b7bcf4-f13f-4e51-8e39-ef655353589c",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://192.168.1.129:8000/api/project/{{id}}/",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"129"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"project",
+								"{{id}}",
+								""
+							]
+						},
+						"description": "return the detailed data from project id\n\nor project not found if not found"
+					},
+					"response": []
+				},
+				{
+					"name": "project/id (update data)",
+					"id": "971b2e6a-9559-402d-afc3-90ff16e678e0",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "id",
+									"value": "4",
+									"type": "text"
+								},
+								{
+									"key": "title",
+									"value": "test-project",
+									"type": "text"
+								},
+								{
+									"key": "description",
+									"value": "test-description_e",
+									"type": "text"
+								},
+								{
+									"key": "type",
+									"value": "test-type",
+									"type": "text"
+								},
+								{
+									"key": "author",
+									"value": "8",
+									"type": "text"
+								},
+								{
+									"key": "contributors",
+									"value": "",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://192.168.1.129:8000/api/project/{{id}}/",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"129"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"project",
+								"{{id}}",
+								""
+							]
+						},
+						"description": "partial update of the project data (can automaticly do full update)"
+					},
+					"response": []
+				},
+				{
+					"name": "project/id (delete)",
+					"id": "f237376b-7411-4eb8-8e89-2daa99e2f2f5",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://192.168.1.129:8000/api/project/{{id}}/",
+							"protocol": "http",
+							"host": [
+								"192",
+								"168",
+								"1",
+								"129"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"project",
+								"{{id}}",
+								""
+							]
+						},
+						"description": "delete the project if id is valid"
+					},
+					"response": []
+				}
+			],
+			"id": "abe84c65-ccc4-43df-afa5-ab0e9829272c",
+			"description": "all request for project management only"
+		}
+	]
+}
