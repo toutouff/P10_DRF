@@ -11,21 +11,22 @@ er la documentation approprié postman
 
 how to install the application
   1. first you need to clone the repository in the desired location
-    ```git clone githuburl```
+    ```git clone https://github.com/toutouff/P10_DRF```
   2. after you have to create the virtual environement 
     ```python3 -venv NameOfTheEnvironement```
-  3. then you can run the server
-    ```python3 manage.py runserver```
+  3. then install required package
+    ```pip intall -r requirements.txt```
 
 
 how to use the application 
-  1. you should have already launch the application if not :
+  1. to run it just run the manage.py file with the runserver argument then precise on what IP and PORT you wanna run it (default = 127.0.0.1:8000) 
     ```python3 manage.py runserver```
   2. then you can access different endpoint by passing certain data to the body of the request the following documentation regroup every endpoint,with detail on required data
 
 # 3. exemple 
+  to find exemple of request and documentation on the different endpoint go see the postman documentation 
+  https://documenter.getpostman.com/view/25555539/2s93RTRYXj
 
 # 4. glossary
-
 
 
