@@ -29,7 +29,7 @@ class Issue(models.Model):
                                related_name='issues', blank=False)
     assigned_to = models.ForeignKey('Contributors',
                                     on_delete=models.CASCADE,
-                                    related_name='issues')
+                                    related_name='issues',blank=True,null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
 

@@ -34,11 +34,15 @@ class IssueSerializer(ModelSerializer):
         model = Issue
         fields = '__all__'
 
+    def create(self, validated_data):
+        proj = validated_data.get('project')
+        return proj.issue.create(**validated_data)
+
 
 class IssueCreationSerializer(ModelSerializer):
     class Meta:
         model = Issue
-        fields = ['title', 'description', 'status', 'assigned_to']
+        fields = ['title', 'description', 'status']
 
 
 class CommentsSerializer(ModelSerializer):
@@ -51,6 +55,10 @@ class UserCreationSerializer(ModelSerializer):
     class Meta:
         model = User
         fields = ['username', 'password']
+
+    def create(self, validated_data):
+        return User.objects.create_user(username=validated_data.get('username'),
+                                        password=validated_data.get('password'))
 
 
 class UserDetailSerializer(ModelSerializer):

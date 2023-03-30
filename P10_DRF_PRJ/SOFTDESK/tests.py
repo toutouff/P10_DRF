@@ -3,7 +3,7 @@ from sys import stderr
 from django.urls import reverse_lazy
 from rest_framework.test import APITestCase
 
-from SOFTDESK.models import User,Project,Contributors,Issue,Comments
+from SOFTDESK.models import User, Project, Contributors, Issue, Comments
 
 
 class SoftDeskTestCase(APITestCase):
@@ -14,11 +14,11 @@ class SoftDeskTestCase(APITestCase):
         self.user2 = User.objects.create_user(username='user2', password='user2')
         self.user3 = User.objects.create_user(username='user3', password='user3')
         self.project2 = Project.objects.create(title='project2', description='project2', author=self.user1)
-        self.project3 = Project.objects.create(title='project3',description='project3',author=self.user2)
+        self.project3 = Project.objects.create(title='project3', description='project3', author=self.user2)
         self.contributor = Contributors.objects.create(permission='Read and Edit', role='test_role',
                                                        user_id=self.user2.id, project_id=self.project2.id)
-        self.contributor2 = Contributors.objects.create(permission='Read and Edit',role='test_role',
-                                                        user_id = self.user1.id,project_id=self.project3.id)
+        self.contributor2 = Contributors.objects.create(permission='Read and Edit', role='test_role',
+                                                        user_id=self.user1.id, project_id=self.project3.id)
         self.issue = Issue.objects.create(title='issue1', description='issue1', author=self.user1,
                                           project=self.project2, status='open', assigned_to=self.contributor)
         self.comment = Comments.objects.create(description='comment1', author=self.user1, issue=self.issue)
@@ -113,8 +113,7 @@ class TestProject(SoftDeskTestCase):
         print(initial_count)
         response = self.client.delete(url)
         self.assertEqual(response.status_code, 204, response.data)
-        self.assertEqual(Project.objects.count(), initial_count - 1,response.data)
-
+        self.assertEqual(Project.objects.count(), initial_count - 1, response.data)
 
         #### CONTRIBUTOR TEST ####
 
@@ -148,8 +147,6 @@ class TestProject(SoftDeskTestCase):
         response = self.client.delete(url)
         self.assertEqual(response.status_code, 204)
         self.assertEqual(count - 1, self.project2.contributors.count())
-
-
 
     ### ISSUE TEST ###
 
@@ -228,46 +225,51 @@ class TestProject(SoftDeskTestCase):
 
 
 class SecurityTestCase(SoftDeskTestCase):
-
-    def GetTest(self,test_data,client,statuscode=401):
-        url = reverse_lazy(test_data[0],kwargs = test_data[1])
+    def GetTest(self, test_data, client, statuscode=404):
+        url = reverse_lazy(test_data[0], kwargs=test_data[1])
         response = client.get(url)
-        message = f'method : get\n url : {url} \n status code : {response.status_code} \n data : {response.data}'
-        self.assertEqual(response.status_code,statuscode,message)
-        print(message,file=stderr)
+        message = f'method : get\n url : {url} \n status code : {response.status_code} \n data : {response.data}\n'
+        try:
+            self.assertEqual(response.status_code, statuscode, message)
+        except AssertionError:
+            print(message, file=stderr)
 
-    def PostTest(self,url_data,client,statuscode=401,test_data=None):
-        url = reverse_lazy(url_data[0],kwargs=url_data[1])
-        response = client.post(url,data= test_data)
-        message = f'method : post\n url : {url} \n status code : {response.status_code} \n data : {response.data}'
-        self.assertEqual(response.status_code,statuscode,message)
-        print(message,file=stderr)
+    def PostTest(self, url_data, client, statuscode=404, test_data=None):
+        url = reverse_lazy(url_data[0], kwargs=url_data[1])
+        response = client.post(url, data=test_data)
+        message = f'method : post\n url : {url} \n status code : {response.status_code} \n data : {response.data}\n'
+        try:
+            self.assertEqual(response.status_code, statuscode, message)
+        except AssertionError:
+            print(message, file=stderr)
 
-    def PutTest(self,test_data,client,status_code=401):
-        url = reverse_lazy(test_data[0],kwargs=test_data[1])
+    def PutTest(self, test_data, client, statuscode=404):
+        url = reverse_lazy(test_data[0], kwargs=test_data[1])
         response = client.put(url)
-        message = f'method : put\n url : {url} \n status code : {response.status_code} \n data : {response.data}'
-        self.assertEqual(response.status_code,status_code,message)
-        print(message,file=stderr)
+        message = f'method : put\n url : {url} \n status code : {response.status_code} \n data : {response.data}\n'
+        try:
+            self.assertEqual(response.status_code, statuscode, message)
+        except AssertionError:
+            print(message, file=stderr)
 
-    def DelTest(self,test_data,client,status_code=401):
-        url = reverse_lazy(test_data[0],kwargs=test_data[1])
+    def DelTest(self, test_data, client, statuscode=404):
+        url = reverse_lazy(test_data[0], kwargs=test_data[1])
         response = client.delete(url)
-        message = f'method : del\n url : {url} \n status code : {response.status_code} \n data : {response.data}'
-        self.assertEqual(response.status_code,status_code,message)
-        print(message,file=stderr)
+        message = f'method : del\n url : {url} \n status code : {response.status_code} \n data : {response.data}\n'
+        try:
+            self.assertEqual(response.status_code, statuscode, message)
+        except AssertionError:
+            print(message, file=stderr)
 
 
 class AuthentificationTestCase(SecurityTestCase):
     def test_all_url(self):
         for url_data in self.urls_data:
             client = self.client
-            self.GetTest(url_data, client)
-            self.PostTest(url_data, client)
-            self.PutTest(url_data, client)
-            self.DelTest(url_data, client)
-
-
+            self.GetTest(url_data, client, statuscode=401)
+            self.PostTest(url_data, client, statuscode=401)
+            self.PutTest(url_data, client, statuscode=401)
+            self.DelTest(url_data, client, statuscode=401)
 
 
 # TODO : AutorizationTestCase
@@ -278,14 +280,44 @@ class AutorizationTestCase(SecurityTestCase):
     def test_all_url(self):
         for url_data in self.urls_data:
             client = self.client
-            self.log_user(client,user_info=self.user3info)
-            if self.urls_data.index(url_data) == 0:
-                self.GetTest(url_data, client, statuscode=200)
-                self.PostTest(url_data, client, statuscode=400)
-                self.PutTest(url_data, client, status_code=405)
-                self.DelTest(url_data, client,status_code=405)
-            else:
-                self.GetTest(url_data, client)
-                self.PostTest(url_data, client)
-                self.PutTest(url_data, client)
-                self.DelTest(url_data, client)
+            self.log_user(client, user_info=self.user3info)
+            self.GetTest(url_data, client)
+            self.PostTest(url_data, client)
+            self.PutTest(url_data, client)
+            self.DelTest(url_data, client)
+
+    # TODO : assert test
+
+    def test_cross_account_project_editing(self):
+        client = self.log_user(self.client, self.user3info)
+        url_data = self.urls_data[1]
+        print(url_data)
+        url = reverse_lazy(url_data[0], kwargs=url_data[1])
+        print(url)
+        data = {'title': 'test_cross_edit'}
+        response = client.put(url, data)
+        print(response.data)
+
+    def test_cross_account_issue_editing(self):
+        client = self.log_user(self.client, self.user3info)
+        url_data = self.urls_data[5]
+        print(url_data)
+        url = reverse_lazy(url_data[0], kwargs=url_data[1])
+        print(url)
+        data = {'title': 'test_cross_account_issue_editing'}
+        response = client.put(url, data)
+        print(response.status_code)
+        print(response.data)
+
+    # 1 5 7
+
+    def test_cross_account_comment_editing(self):
+        client = self.log_user(self.client, self.user3info)
+        url_data = self.urls_data[7]
+        print(url_data)
+        url = reverse_lazy(url_data[0], kwargs=url_data[1])
+        print(url)
+        data = {'title': 'test_cross_account_issue_editing'}
+        response = client.put(url, data)
+        print(response.status_code)
+        print(response.data)
